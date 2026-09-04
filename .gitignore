@@ -1,0 +1,26 @@
+# --- Secrets: NEVER commit your real API key ---
+.env
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# --- Generated / large data (optional: keep out of git) ---
+# The survey JSON can be huge (50k-100k records). Regenerate it with the script.
+data/survey_responses.json
+
+# --- Local vector store (rebuilt by the ingest step) ---
+chroma_db/
+
+# --- Editor / OS junk ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Misc ---
+firstcheck

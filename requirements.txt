@@ -1,0 +1,30 @@
+# ============================================================================
+# MiniSense — Survey Analysis Agent : Python dependencies
+# Install everything with:  pip install -r requirements.txt
+# ============================================================================
+
+# --- LLM provider (the "brain" the agents call) ---------------------------
+openai>=1.40.0            # OpenAI SDK: chat completions + function/tool calling
+
+# --- Agent orchestration --------------------------------------------------
+langgraph>=0.2.0          # Build the orchestrator -> sub-agent graph
+langchain>=0.2.0          # Utilities (text splitters for RAG chunking)
+langchain-text-splitters>=0.2.0  # Sentence-aware chunking of the FAQ
+
+# --- Structured data between agents (REQUIRED by the assessment) ----------
+pydantic>=2.7.0           # Typed task specs + typed agent outputs (not raw text)
+
+# --- RAG: embeddings + vector store ---------------------------------------
+sentence-transformers>=3.0.0  # Local, free embedding model (all-MiniLM-L6-v2)
+chromadb>=0.5.0           # Local vector database to store & search FAQ chunks
+
+# --- Data work ------------------------------------------------------------
+pandas>=2.2.0             # Fast metric computation (CSAT, averages, counts)
+faker>=25.0.0             # Generate realistic fake survey responses
+
+# --- API layer ------------------------------------------------------------
+fastapi>=0.111.0          # The /ask HTTP endpoint
+uvicorn[standard]>=0.30.0 # ASGI server to run FastAPI
+
+# --- Config ---------------------------------------------------------------
+python-dotenv>=1.0.0      # Load OPENAI_API_KEY from a .env file
