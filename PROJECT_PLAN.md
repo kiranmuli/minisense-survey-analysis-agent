@@ -22,15 +22,22 @@ Deliverable: GitHub repo with README, runnable code, and a design writeup.
 | Layer | Choice | Why |
 |---|---|---|
 | Language | Python 3.11 | Standard for AI/agent tooling |
-| LLM | OpenAI (`gpt-4o-mini`) | Reasoning + function calling |
+| LLM runtime | **Ollama (local)** | Free, no API key, already installed |
+| LLM model | **`qwen3:8b`** + `/no_think` | Accurate tool calls + clean JSON output |
+| LLM SDK | `openai` SDK → Ollama's OpenAI-compatible endpoint | Same code works for Ollama *or* real OpenAI |
 | Agents | LangGraph | Orchestrator → sub-agent graph |
 | Structured I/O | Pydantic | Typed task specs & outputs (required) |
-| Embeddings | sentence-transformers (local) | Free, offline after first download |
+| Embeddings | **`nomic-embed-text`** (local via Ollama) | Free, already installed |
 | Vector store | ChromaDB | Simplest local vector DB |
 | Chunking | LangChain text splitters | Sentence-aware chunking |
 | Data | pandas + Faker | Metrics + fake data generation |
 | API | FastAPI + uvicorn | `/ask` endpoint |
-| Config | python-dotenv | Load API key from `.env` |
+| Config | python-dotenv | Load settings from `.env` |
+
+> **Note:** We run fully local via Ollama (no cost, no key). `qwen3:8b` is a "thinking"
+> model, so every system prompt ends with `/no_think` to suppress reasoning tokens and
+> get clean structured output. Switching to real OpenAI later is a one-line `.env` change
+> (`LLM_BACKEND=openai` + `OPENAI_API_KEY=...`).
 
 ---
 
@@ -125,3 +132,4 @@ User question
 | Date | Step | Notes |
 |---|---|---|
 | 2026-09-04 | Step 0 | Setup complete; dependencies installed. |
+| 2026-09-04 | Step 0.1 | Switched to local Ollama (no API key). LLM=qwen3:8b, embeddings=nomic-embed-text. Verified chat + tool calling work. |
