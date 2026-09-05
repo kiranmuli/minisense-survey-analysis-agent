@@ -64,6 +64,11 @@ DEFAULT_METRICS = ["csat", "average_rating", "response_count", "top_themes"]
 COMPARE_HINTS = ["compare", "comparison", " vs", "versus", "last month", "previous",
                  "trend", "change", "changed", "month over month", "month-over-month"]
 
+# Words that imply the answer needs business/FAQ context (targets, policies, etc.)
+FAQ_HINTS = ["target", "policy", "policies", "why", "how do", "how does", "hours",
+             "handle", "refund", "booking", "reservation", "wait time", "faq",
+             "context", "supposed to", "expected"]
+
 
 # ---------------------------------------------------------------------------
 # Planner
@@ -173,7 +178,9 @@ def build_specs(question: str, plan: dict) -> list[TaskSpec]:
     if scope != "compare" and any(h in question.lower() for h in COMPARE_HINTS):
         scope = "compare"
 
-    need_faq = plan.get("need_faq", True)
+    # Trust the plan, but also force FAQ retrieval when the question clearly needs
+    # business context (e.g. "compare to their target" -> needs the FAQ target).
+    need_faq = plan.get("need_faq", True) or any(h in question.lower() for h in FAQ_HINTS)
     top_k = 5
 
     specs: list[TaskSpec] = []

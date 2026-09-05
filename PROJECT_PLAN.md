@@ -122,10 +122,10 @@ User question
   - `docker compose up --build` → self-contained stack (auto-pulls models, generates data, builds index, serves)
   - commit: `feat: dockerize with compose (ollama + app)`
 
-- [ ] **Step 8 — Evaluation + README**
-  - 3 sample questions with retrieved chunks + final answers
-  - Part 3 fine-tuning writeup (300–500 words)
-  - design writeup + run instructions
+- [x] **Step 8 — Evaluation + README**
+  - README: architecture (mermaid), tech stack, structure, setup/run (local + Docker), API, design decisions, observability, limitations
+  - Part 2 evaluation: 3 sample questions with retrieved chunks + answers + honest commentary (caught & fixed a need_faq bug)
+  - Part 3 fine-tuning writeup (409 words)
   - commit: `docs: README, evaluation, and fine-tuning design`
 
 ---
@@ -152,3 +152,5 @@ User question
 | 2026-09-05 | Step 6 | LangGraph orchestrator: plan->data/rag/comparison->summarize. Verified end-to-end on comparison Q (routed 3 agents, business detected, Wait Time +7.9pp correct). Fixed LLM arithmetic drift by pre-computing deltas. |
 | 2026-09-05 | Step 7 | FastAPI /ask + /health. Verified 200 via TestClient. Caught & fixed a grounding bug: single-month Q had invented a July comparison + FAQ; hardened SummaryAgent with explicit absence markers + temp 0. |
 | 2026-09-05 | Step 7.5 | Dockerized: compose stack (ollama + app), entrypoint auto-pulls models + builds data/index. Trimmed unused torch/langchain deps. Compose validated; image build verified. |
+| 2026-09-05 | Extra | Switched default to llama3.2 (~30-90s vs 18 min); hardened DataAgent tool-arg coercion; added full DEBUG trace logging of prompts/tool-calls/metrics/evidence. |
+| 2026-09-05 | Step 8 | README + Part 2 evaluation (3 Qs, real chunks/answers, honest commentary) + Part 3 fine-tuning essay (409 words). Fixed need_faq so "target/policy" questions retrieve FAQ. All required deliverables complete. |
