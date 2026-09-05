@@ -79,9 +79,9 @@ User question
   - venv, `requirements.txt`, `.gitignore`, `.env.example`, `app/config.py`, folder skeleton
   - commit: `chore: project setup and dependencies`
 
-- [ ] **Step 1 — Generate data** (Appendix A & B)
-  - `data/generate_data.py` → `survey_responses.json` (50k–100k records)
-  - expand `data/product_faq.txt` to ~500 words
+- [x] **Step 1 — Generate data** (Appendix A & B)
+  - `data/generate_data.py` → `survey_responses.json` (60k records, rating-correlated free-text, month-over-month drift)
+  - expanded `data/product_faq.txt` to ~500 words (GreenLeaf Bistro)
   - commit: `feat: fake survey dataset + product FAQ`
 
 - [ ] **Step 2 — Pydantic models + metric tools**
@@ -133,3 +133,4 @@ User question
 |---|---|---|
 | 2026-09-04 | Step 0 | Setup complete; dependencies installed. |
 | 2026-09-04 | Step 0.1 | Switched to local Ollama (no API key). LLM=qwen3:8b, embeddings=nomic-embed-text. Verified chat + tool calling work. |
+| 2026-09-05 | Step 1 | Generated 60k survey records + ~500-word FAQ. Verified signal: avg rating 3.85→3.55 Jul→Aug; wait-time complaints 19%→39%. JSON is gitignored (regenerable). |
