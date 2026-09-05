@@ -80,7 +80,7 @@ comparison). Sub-agents exchange **typed Pydantic objects**, never raw text.
 | Embeddings | `nomic-embed-text` (local via Ollama) | Free, 768-dim |
 | Vector store | ChromaDB | Simple local vector DB (cosine) |
 | Chunking | Structure-aware + LangChain splitter fallback | Q&A-aware |
-| Data | pandas-free pure Python + Faker deps | Metrics + fake data |
+| Data / metrics | Pure Python (stdlib) | No pandas needed; exact, dependency-light |
 | API | FastAPI + uvicorn | `/ask` endpoint |
 
 > **Switching to real OpenAI** is a `.env` change only (`LLM_BACKEND=openai` +
