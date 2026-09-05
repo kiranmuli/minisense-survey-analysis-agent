@@ -23,12 +23,14 @@ Graph shape (linear; each node acts only if the plan asked for it):
 from __future__ import annotations
 
 import json
+import time
 from typing import Optional, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
 from app.agents import comparison_agent, data_agent, rag_agent, summary_agent
 from app.llm import MODEL, client, nothink
+from app.logging_config import log
 from app.models import (
     AgentType,
     AskResponse,
@@ -149,7 +151,7 @@ def _llm_plan(question: str) -> dict:
         if calls:
             return json.loads(calls[0].function.arguments)
     except Exception as exc:
-        print(f"[Orchestrator] LLM planning failed ({exc}); using heuristic plan.")
+        log.warning(f"LLM planning failed ({exc}); using heuristic plan.")
     return _heuristic_plan(question)
 
 
@@ -217,32 +219,52 @@ def plan_node(state: GraphState) -> dict:
     """Node 1: build the plan + structured specs."""
     plan = _llm_plan(state["question"])
     specs = build_specs(state["question"], plan)
+    log.info(f"[plan] agents={[s.agent.value for s in specs]} "
+             f"business={next((s.business_name for s in specs if s.business_name), 'all')}")
     return {"specs": specs}
 
 
 def data_node(state: GraphState) -> dict:
     spec = _find(state["specs"], AgentType.DATA)
-    return {"data": data_agent.run(spec)} if spec else {}
+    if not spec:
+        return {}
+    t = time.perf_counter()
+    result = data_agent.run(spec)
+    log.info(f"[DataAgent] {result.scope} ({(time.perf_counter()-t)*1000:.0f} ms)")
+    return {"data": result}
 
 
 def rag_node(state: GraphState) -> dict:
     spec = _find(state["specs"], AgentType.RAG)
-    return {"rag": rag_agent.run(spec)} if spec else {}
+    if not spec:
+        return {}
+    t = time.perf_counter()
+    result = rag_agent.run(spec)
+    log.info(f"[RAGAgent] retrieved {len(result.chunks)} chunks ({(time.perf_counter()-t)*1000:.0f} ms)")
+    return {"rag": result}
 
 
 def comparison_node(state: GraphState) -> dict:
     spec = _find(state["specs"], AgentType.COMPARISON)
-    return {"comparison": comparison_agent.run(spec)} if spec else {}
+    if not spec:
+        return {}
+    t = time.perf_counter()
+    result = comparison_agent.run(spec)
+    log.info(f"[ComparisonAgent] csat_change={result.csat_change} pp "
+             f"({(time.perf_counter()-t)*1000:.0f} ms)")
+    return {"comparison": result}
 
 
 def summarize_node(state: GraphState) -> dict:
     """Node 5: synthesize the final answer from whatever evidence was gathered."""
+    t = time.perf_counter()
     result = summary_agent.run(
         state["question"],
         data=state.get("data"),
         rag=state.get("rag"),
         comparison=state.get("comparison"),
     )
+    log.info(f"[SummaryAgent] wrote {len(result.answer)} chars ({(time.perf_counter()-t)*1000:.0f} ms)")
     return {"answer": result.answer}
 
 
@@ -270,7 +292,10 @@ GRAPH = _build_graph()
 
 def answer_question(question: str) -> AskResponse:
     """Public entry point: NL question in -> full structured AskResponse out."""
+    t = time.perf_counter()
+    log.info(f"[orchestrator] question: {question!r}")
     final = GRAPH.invoke({"question": question})
+    log.info(f"[orchestrator] done in {time.perf_counter()-t:.1f}s")
     return AskResponse(
         question=question,
         answer=final.get("answer", ""),

@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 
 from app.llm import MODEL, client, nothink
+from app.logging_config import log
 from app.models import DataAgentResult, MetricResult, TaskSpec, ThemeCount
 from app.tools import metrics as metric_tools
 
@@ -152,7 +153,7 @@ def run(spec: TaskSpec) -> DataAgentResult:
             raw = _execute_tool(args, spec)
             return _to_result(raw, spec)
     except Exception as exc:  # network/model hiccup -> fall through to fallback
-        print(f"[DataAgent] tool-calling path failed ({exc}); using deterministic fallback.")
+        log.warning(f"[DataAgent] tool-calling path failed ({exc}); using deterministic fallback.")
 
     # ---- Deterministic fallback: run straight from the TaskSpec ----
     raw = _execute_tool({}, spec)

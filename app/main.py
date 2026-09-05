@@ -19,10 +19,13 @@ Then open http://127.0.0.1:8000/docs for interactive Swagger UI.
 
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+import time
+
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.config import CHROMA_DIR, settings
+from app.logging_config import log
 from app.models import AskResponse
 from app.orchestrator import answer_question
 
@@ -31,6 +34,17 @@ app = FastAPI(
     description="Multi-agent + RAG system that answers business questions about survey feedback.",
     version="1.0.0",
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log EVERY endpoint hit: method, path, status, and duration."""
+    start = time.perf_counter()
+    log.info(f"--> {request.method} {request.url.path}")
+    response = await call_next(request)
+    ms = (time.perf_counter() - start) * 1000
+    log.info(f"<-- {request.method} {request.url.path} {response.status_code} ({ms:.0f} ms)")
+    return response
 
 
 class AskRequest(BaseModel):
@@ -69,8 +83,12 @@ def health() -> dict:
 @app.post("/ask", response_model=AskResponse)
 def ask(req: AskRequest) -> AskResponse:
     """Answer a natural-language business question via the multi-agent pipeline."""
+    log.info(f"/ask question: {req.question!r}")
     try:
-        return answer_question(req.question)
+        resp = answer_question(req.question)
+        log.info(f"/ask answered (plan={[s.agent.value for s in resp.plan]})")
+        return resp
     except Exception as exc:
         # Surface a clean 500 with the reason rather than a raw stack trace.
+        log.exception("/ask failed")
         raise HTTPException(status_code=500, detail=f"Failed to answer question: {exc}") from exc
