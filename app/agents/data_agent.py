@@ -83,8 +83,20 @@ def _execute_tool(args: dict, spec: TaskSpec) -> dict:
     *which metrics*. We merge: metrics/top_k from the model (falling back to the
     spec), filters from the spec (falling back to the model's args).
     """
-    metrics = args.get("metrics") or spec.metrics or DEFAULT_METRICS
-    top_k = args.get("top_k") or spec.top_k
+    # Always compute the core metrics as a floor, then add anything the plan or
+    # the model's tool call additionally asked for. This prevents a weaker model
+    # from accidentally dropping a key metric (e.g. csat) via its tool arguments.
+    requested = args.get("metrics") or []
+    # Small models sometimes send metrics as a string ("csat" or "csat,avg")
+    # instead of a list — coerce defensively so concatenation can't crash.
+    if isinstance(requested, str):
+        requested = [m.strip() for m in requested.split(",") if m.strip()]
+    metrics = list(dict.fromkeys(DEFAULT_METRICS + list(spec.metrics or []) + list(requested)))
+    # top_k may arrive as a string ("5") from a weaker model — coerce to int.
+    try:
+        top_k = int(args.get("top_k") or spec.top_k)
+    except (TypeError, ValueError):
+        top_k = spec.top_k
 
     business_id = spec.business_id or args.get("business_id") or None
     start = (spec.period.start if spec.period else None) or args.get("start")

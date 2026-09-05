@@ -4,10 +4,10 @@
 #   docker compose up --build
 #   -> API at http://localhost:8000   (Swagger UI at /docs)
 #
-# First run downloads the models (qwen3:8b ~5GB, nomic-embed-text ~270MB) into
-# a named volume, so subsequent runs are fast. CPU-only works but is slower; if
-# you have an NVIDIA GPU + nvidia-container-toolkit, uncomment the `deploy`
-# block under the ollama service for much faster inference.
+# First run downloads the models (llama3.2 ~2GB, nomic-embed-text ~270MB) into
+# a named volume, so subsequent runs are fast. CPU-only works fine; if you have
+# an NVIDIA GPU + nvidia-container-toolkit, uncomment the `deploy` block under
+# the ollama service for much faster inference (and consider OLLAMA_MODEL=qwen3:8b).
 # ============================================================================
 services:
   ollama:
@@ -40,7 +40,7 @@ services:
     environment:
       LLM_BACKEND: ollama
       OLLAMA_BASE_URL: http://ollama:11434/v1   # talk to the ollama service
-      OLLAMA_MODEL: qwen3:8b
+      OLLAMA_MODEL: llama3.2:latest   # fast on CPU; set qwen3:8b for higher quality (needs GPU/patience)
       OLLAMA_EMBED_MODEL: nomic-embed-text
       EMBEDDING_BACKEND: ollama
       SURVEY_RECORDS: "60000"        # dataset size generated on first boot
