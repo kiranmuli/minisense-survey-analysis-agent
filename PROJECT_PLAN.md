@@ -106,8 +106,9 @@ User question
   - `app/agents/summary_agent.py` (LLM narrative grounded strictly in structured evidence)
   - commit: `feat: comparison and summary agents`
 
-- [ ] **Step 6 — Orchestrator (LangGraph)** (Part 1)
-  - `app/orchestrator.py` — plan → route → synthesize
+- [x] **Step 6 — Orchestrator (LangGraph)** (Part 1)
+  - `app/orchestrator.py` — LLM `build_plan` tool + deterministic guards → LangGraph route (data/rag/comparison) → synthesize
+  - hardened: pre-computed pp deltas in comparison evidence; UTF-8 CLI output
   - commit: `feat: orchestrator graph wiring all agents`
 
 - [ ] **Step 7 — FastAPI endpoint**
@@ -141,3 +142,4 @@ User question
 | 2026-09-05 | Step 3 | DataAgent with real LLM tool calling (qwen3:8b -> get_survey_metrics). Verified Aug/GreenLeaf CSAT 60.1, avg 3.55, top theme Wait Time. Deterministic fallback in place. |
 | 2026-09-05 | Step 4 | RAG pipeline: 10 Q&A chunks embedded (nomic, dim=768) into cosine Chroma. Retrieval verified incl. semantic match (phone->app booking). chroma_db/ gitignored. |
 | 2026-09-05 | Step 5 | ComparisonAgent (Jul vs Aug: CSAT -9.7pp, Wait Time 19.5%->27.4%) + SummaryAgent. Verified full evidence->narrative with accurate, non-hallucinated numbers. |
+| 2026-09-05 | Step 6 | LangGraph orchestrator: plan->data/rag/comparison->summarize. Verified end-to-end on comparison Q (routed 3 agents, business detected, Wait Time +7.9pp correct). Fixed LLM arithmetic drift by pre-computing deltas. |

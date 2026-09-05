@@ -78,7 +78,9 @@ def run(
         "question. Use ONLY the evidence provided: quote the exact metrics and "
         "reflect period-over-period changes and their direction. Weave in relevant "
         "FAQ context where it adds business meaning. Do NOT invent numbers or "
-        "facts that are not in the evidence. Write plainly, no bullet points."
+        "facts that are not in the evidence, and do NOT do your own arithmetic — "
+        "quote figures and changes (e.g. percentage-point deltas) exactly as given. "
+        "Write plainly, no bullet points."
     )
     user = f"Question: {question}\n\nEvidence:\n{evidence}\n\nWrite the final answer."
 

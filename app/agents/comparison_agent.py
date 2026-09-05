@@ -85,7 +85,8 @@ def _notable_changes(prev: PeriodMetrics, curr: PeriodMetrics,
     movers.sort(reverse=True)
     for _, theme, p, c, delta in movers[:3]:
         verb = "rose" if delta > 0 else "fell"
-        notes.append(f"'{theme}' mentions {verb} from {p}% to {c}% of responses.")
+        # Include the exact pp delta so the SummaryAgent never has to subtract.
+        notes.append(f"'{theme}' mentions {verb} {abs(delta)} pp (from {p}% to {c}% of responses).")
 
     if not notes:
         notes.append("No significant changes between the two periods.")
