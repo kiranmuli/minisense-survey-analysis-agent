@@ -101,8 +101,9 @@ User question
   - `app/agents/rag_agent.py` (typed `RAGAgentResult`)
   - commit: `feat: RAG ingest + retrieve + RAGAgent`
 
-- [ ] **Step 5 — ComparisonAgent + SummaryAgent**
-  - `app/agents/comparison_agent.py`, `app/agents/summary_agent.py`
+- [x] **Step 5 — ComparisonAgent + SummaryAgent**
+  - `app/agents/comparison_agent.py` (deterministic two-period diff + notable-change detection)
+  - `app/agents/summary_agent.py` (LLM narrative grounded strictly in structured evidence)
   - commit: `feat: comparison and summary agents`
 
 - [ ] **Step 6 — Orchestrator (LangGraph)** (Part 1)
@@ -139,3 +140,4 @@ User question
 | 2026-09-05 | Step 2 | Pydantic contracts (TaskSpec, typed results) + metric tools. Verified on 60k rows: CSAT 64.9%, Aug/GreenLeaf top theme Wait Time 27.4%, string-rating coercion safe. |
 | 2026-09-05 | Step 3 | DataAgent with real LLM tool calling (qwen3:8b -> get_survey_metrics). Verified Aug/GreenLeaf CSAT 60.1, avg 3.55, top theme Wait Time. Deterministic fallback in place. |
 | 2026-09-05 | Step 4 | RAG pipeline: 10 Q&A chunks embedded (nomic, dim=768) into cosine Chroma. Retrieval verified incl. semantic match (phone->app booking). chroma_db/ gitignored. |
+| 2026-09-05 | Step 5 | ComparisonAgent (Jul vs Aug: CSAT -9.7pp, Wait Time 19.5%->27.4%) + SummaryAgent. Verified full evidence->narrative with accurate, non-hallucinated numbers. |
