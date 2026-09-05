@@ -14,6 +14,12 @@ import logging
 import os
 import sys
 
+from dotenv import load_dotenv
+
+# Load .env HERE too: this module can be imported before app.config runs
+# load_dotenv(), and we need LOG_LEVEL available when the logger is configured.
+load_dotenv()
+
 
 def setup_logging() -> logging.Logger:
     """Configure and return the shared 'minisense' logger (idempotent)."""

@@ -29,7 +29,7 @@ from typing import Optional, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from app.agents import comparison_agent, data_agent, rag_agent, summary_agent
-from app.llm import MODEL, client, nothink
+from app.llm import chat, nothink
 from app.logging_config import log
 from app.models import (
     AgentType,
@@ -139,19 +139,20 @@ def _llm_plan(question: str) -> dict:
         "Urban Threads Boutique, BrightSmile Dental, PetPals Grooming. Decide the plan "
         "by calling build_plan."
     )
+    log.debug("[Planner] Deciding which agents + filters are needed for the question...")
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "system", "content": system},
-                      {"role": "user", "content": question}],
-            tools=[BUILD_PLAN_TOOL],
-            temperature=0,
-        )
-        calls = resp.choices[0].message.tool_calls
+        msg = chat("Planner",
+                   [{"role": "system", "content": system},
+                    {"role": "user", "content": question}],
+                   tools=[BUILD_PLAN_TOOL], temperature=0)
+        calls = msg.tool_calls
         if calls:
-            return json.loads(calls[0].function.arguments)
+            args = json.loads(calls[0].function.arguments)
+            log.debug(f"[Planner] parsed plan from model: {args}")
+            return args
     except Exception as exc:
         log.warning(f"LLM planning failed ({exc}); using heuristic plan.")
+    log.debug("[Planner] falling back to keyword heuristic plan.")
     return _heuristic_plan(question)
 
 
@@ -221,6 +222,9 @@ def plan_node(state: GraphState) -> dict:
     specs = build_specs(state["question"], plan)
     log.info(f"[plan] agents={[s.agent.value for s in specs]} "
              f"business={next((s.business_name for s in specs if s.business_name), 'all')}")
+    # DEBUG: show the exact structured order each sub-agent will receive.
+    for s in specs:
+        log.debug(f"[plan] TaskSpec -> {s.agent.value}: {s.model_dump(exclude_none=True)}")
     return {"specs": specs}
 
 

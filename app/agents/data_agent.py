@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 
-from app.llm import MODEL, client, nothink
+from app.llm import chat, nothink
 from app.logging_config import log
 from app.models import DataAgentResult, MetricResult, TaskSpec, ThemeCount
 from app.tools import metrics as metric_tools
@@ -87,11 +87,19 @@ def _execute_tool(args: dict, spec: TaskSpec) -> dict:
     # the model's tool call additionally asked for. This prevents a weaker model
     # from accidentally dropping a key metric (e.g. csat) via its tool arguments.
     requested = args.get("metrics") or []
-    # Small models sometimes send metrics as a string ("csat" or "csat,avg")
-    # instead of a list — coerce defensively so concatenation can't crash.
+    # Small models send metrics in messy shapes: a plain string ("csat"), a
+    # comma list ("csat,avg"), or even a stringified JSON array ('["csat"]').
+    # Normalize all of them to a clean list.
     if isinstance(requested, str):
-        requested = [m.strip() for m in requested.split(",") if m.strip()]
-    metrics = list(dict.fromkeys(DEFAULT_METRICS + list(spec.metrics or []) + list(requested)))
+        s = requested.strip()
+        try:
+            parsed = json.loads(s)               # handles '["csat"]'
+            requested = parsed if isinstance(parsed, list) else [str(parsed)]
+        except (json.JSONDecodeError, ValueError):
+            requested = [m.strip() for m in s.split(",") if m.strip()]
+    # Keep only metric names we actually support (drops any junk).
+    requested = [m for m in requested if m in metric_tools.METRIC_FUNCS]
+    metrics = list(dict.fromkeys(DEFAULT_METRICS + list(spec.metrics or []) + requested))
     # top_k may arrive as a string ("5") from a weaker model — coerce to int.
     try:
         top_k = int(args.get("top_k") or spec.top_k)
@@ -102,9 +110,14 @@ def _execute_tool(args: dict, spec: TaskSpec) -> dict:
     start = (spec.period.start if spec.period else None) or args.get("start")
     end = (spec.period.end if spec.period else None) or args.get("end")
 
+    log.debug(f"[DataAgent] running metrics={metrics} "
+              f"filter(business={business_id}, dates={start}..{end}, top_k={top_k})")
     raw = metric_tools.run_metrics(
         metrics=metrics, business_id=business_id, start=start, end=end, top_k=top_k
     )
+    log.debug(f"[DataAgent] computed over {raw.get('_scope_count')} rows -> "
+              f"csat={raw.get('csat')} avg={raw.get('average_rating')} "
+              f"count={raw.get('response_count')} themes={raw.get('top_themes')}")
     raw["_used"] = {"business_id": business_id, "start": start, "end": end, "metrics": metrics}
     return raw
 
@@ -148,14 +161,11 @@ def run(spec: TaskSpec) -> DataAgentResult:
     )
 
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "system", "content": system},
-                      {"role": "user", "content": user}],
-            tools=[GET_METRICS_TOOL],
-            temperature=0,
-        )
-        tool_calls = resp.choices[0].message.tool_calls
+        msg = chat("DataAgent",
+                   [{"role": "system", "content": system},
+                    {"role": "user", "content": user}],
+                   tools=[GET_METRICS_TOOL], temperature=0)
+        tool_calls = msg.tool_calls
         if tool_calls:
             # Parse the model's chosen arguments (robust to malformed JSON).
             try:

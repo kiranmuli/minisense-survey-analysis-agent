@@ -14,6 +14,7 @@ Design choice — deterministic, NOT LLM-driven:
 
 from __future__ import annotations
 
+from app.logging_config import log
 from app.models import (
     ComparisonAgentResult,
     PeriodMetrics,
@@ -102,6 +103,10 @@ def run(spec: TaskSpec) -> ComparisonAgentResult:
 
     prev, prev_shares = _period_metrics(previous_p, spec.business_id, spec.top_k)
     curr, curr_shares = _period_metrics(current_p, spec.business_id, spec.top_k)
+    log.debug(f"[ComparisonAgent] {prev.period_label}: csat={prev.csat}% "
+              f"avg={prev.average_rating} n={prev.response_count}")
+    log.debug(f"[ComparisonAgent] {curr.period_label}: csat={curr.csat}% "
+              f"avg={curr.average_rating} n={curr.response_count}")
 
     return ComparisonAgentResult(
         current=curr,

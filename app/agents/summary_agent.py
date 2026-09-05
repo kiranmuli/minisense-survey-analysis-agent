@@ -16,7 +16,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from app.llm import MODEL, client, nothink
+from app.llm import chat, nothink
+from app.logging_config import log
 from app.models import (
     ComparisonAgentResult,
     DataAgentResult,
@@ -78,6 +79,7 @@ def run(
 ) -> SummaryAgentResult:
     """Synthesize the final narrative answer from the gathered evidence."""
     evidence = _format_evidence(data, rag, comparison)
+    log.debug(f"[SummaryAgent] evidence bundle handed to the model:\n{evidence}")
 
     system = nothink(
         "You are SummaryAgent for a survey-analytics tool. Write a concise, "
@@ -94,13 +96,11 @@ def run(
     user = f"Question: {question}\n\nEvidence:\n{evidence}\n\nWrite the final answer."
 
     try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "system", "content": system},
-                      {"role": "user", "content": user}],
-            temperature=0,  # deterministic, grounded — no creative padding
-        )
-        answer = (resp.choices[0].message.content or "").strip()
+        msg = chat("SummaryAgent",
+                   [{"role": "system", "content": system},
+                    {"role": "user", "content": user}],
+                   temperature=0)  # deterministic, grounded — no creative padding
+        answer = (msg.content or "").strip()
     except Exception as exc:
         # Fallback: return a plain, factual summary assembled from the evidence.
         answer = f"(LLM unavailable: {exc})\n{evidence}"
