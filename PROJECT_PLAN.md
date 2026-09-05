@@ -89,8 +89,9 @@ User question
   - `app/tools/metrics.py` (`compute_csat`, avg rating, counts, distribution, top themes; defensive coercion; `run_metrics` dispatcher)
   - commit: `feat: structured models and metric tools`
 
-- [ ] **Step 3 — DataAgent**
-  - `app/agents/data_agent.py` — loads JSON, calls metric tools (tool calling demo)
+- [x] **Step 3 — DataAgent**
+  - `app/llm.py` (shared client + `/no_think` helper)
+  - `app/agents/data_agent.py` — LLM calls `get_survey_metrics` tool; deterministic fallback; returns typed `DataAgentResult`
   - commit: `feat: DataAgent with tool calling`
 
 - [ ] **Step 4 — RAG pipeline** (Part 2)
@@ -135,3 +136,4 @@ User question
 | 2026-09-04 | Step 0.1 | Switched to local Ollama (no API key). LLM=qwen3:8b, embeddings=nomic-embed-text. Verified chat + tool calling work. |
 | 2026-09-05 | Step 1 | Generated 60k survey records + ~500-word FAQ. Verified signal: avg rating 3.85→3.55 Jul→Aug; wait-time complaints 19%→39%. JSON is gitignored (regenerable). |
 | 2026-09-05 | Step 2 | Pydantic contracts (TaskSpec, typed results) + metric tools. Verified on 60k rows: CSAT 64.9%, Aug/GreenLeaf top theme Wait Time 27.4%, string-rating coercion safe. |
+| 2026-09-05 | Step 3 | DataAgent with real LLM tool calling (qwen3:8b -> get_survey_metrics). Verified Aug/GreenLeaf CSAT 60.1, avg 3.55, top theme Wait Time. Deterministic fallback in place. |
