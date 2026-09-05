@@ -54,11 +54,18 @@ def _format_evidence(
                      f"CSAT {comparison.current.csat}%, avg {comparison.current.average_rating}")
         for note in comparison.notable_changes:
             lines.append(f"  - {note}")
+    else:
+        # Make the ABSENCE explicit so the model can't invent a comparison.
+        lines.append("[COMPARISON] None. No period-over-period comparison was performed. "
+                     "Do NOT mention any previous period or any change over time.")
 
     if rag and rag.chunks:
         lines.append("[FAQ CONTEXT]")
         for c in rag.chunks:
             lines.append(f"  ({c.score}) {c.text}")
+    else:
+        lines.append("[FAQ CONTEXT] None. No FAQ context was retrieved. "
+                     "Do NOT reference or quote the FAQ.")
 
     return "\n".join(lines) if lines else "No evidence was gathered."
 
@@ -74,12 +81,14 @@ def run(
 
     system = nothink(
         "You are SummaryAgent for a survey-analytics tool. Write a concise, "
-        "business-language answer (one paragraph, 3-6 sentences) to the user's "
-        "question. Use ONLY the evidence provided: quote the exact metrics and "
-        "reflect period-over-period changes and their direction. Weave in relevant "
-        "FAQ context where it adds business meaning. Do NOT invent numbers or "
-        "facts that are not in the evidence, and do NOT do your own arithmetic — "
-        "quote figures and changes (e.g. percentage-point deltas) exactly as given. "
+        "business-language answer (one paragraph, 2-5 sentences) to the user's "
+        "question, using ONLY the evidence provided. Strict rules: "
+        "(1) Never invent numbers or facts not in the evidence. "
+        "(2) Do NOT do your own arithmetic — quote figures and deltas exactly as given. "
+        "(3) Discuss a change between periods ONLY if a [COMPARISON] section with data "
+        "is present; if it says None, do not mention any previous period or trend. "
+        "(4) Reference the FAQ ONLY if a [FAQ CONTEXT] section with excerpts is present; "
+        "if it says None, do not mention the FAQ. "
         "Write plainly, no bullet points."
     )
     user = f"Question: {question}\n\nEvidence:\n{evidence}\n\nWrite the final answer."
@@ -89,7 +98,7 @@ def run(
             model=MODEL,
             messages=[{"role": "system", "content": system},
                       {"role": "user", "content": user}],
-            temperature=0.2,  # a little warmth for readable prose, still grounded
+            temperature=0,  # deterministic, grounded — no creative padding
         )
         answer = (resp.choices[0].message.content or "").strip()
     except Exception as exc:

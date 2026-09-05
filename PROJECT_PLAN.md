@@ -111,8 +111,9 @@ User question
   - hardened: pre-computed pp deltas in comparison evidence; UTF-8 CLI output
   - commit: `feat: orchestrator graph wiring all agents`
 
-- [ ] **Step 7 — FastAPI endpoint**
-  - `app/main.py` — `POST /ask`
+- [x] **Step 7 — FastAPI endpoint**
+  - `app/main.py` — `POST /ask` (returns answer + evidence + plan), `GET /health`, `GET /`
+  - hardened SummaryAgent: explicit absence markers + strict no-hallucination rules (fixed invented comparison/FAQ)
   - commit: `feat: FastAPI /ask endpoint`
 
 - [ ] **Step 8 — Evaluation + README**
@@ -143,3 +144,4 @@ User question
 | 2026-09-05 | Step 4 | RAG pipeline: 10 Q&A chunks embedded (nomic, dim=768) into cosine Chroma. Retrieval verified incl. semantic match (phone->app booking). chroma_db/ gitignored. |
 | 2026-09-05 | Step 5 | ComparisonAgent (Jul vs Aug: CSAT -9.7pp, Wait Time 19.5%->27.4%) + SummaryAgent. Verified full evidence->narrative with accurate, non-hallucinated numbers. |
 | 2026-09-05 | Step 6 | LangGraph orchestrator: plan->data/rag/comparison->summarize. Verified end-to-end on comparison Q (routed 3 agents, business detected, Wait Time +7.9pp correct). Fixed LLM arithmetic drift by pre-computing deltas. |
+| 2026-09-05 | Step 7 | FastAPI /ask + /health. Verified 200 via TestClient. Caught & fixed a grounding bug: single-month Q had invented a July comparison + FAQ; hardened SummaryAgent with explicit absence markers + temp 0. |
