@@ -10,6 +10,25 @@ business-language answer.
 Everything runs **100% locally and free** via [Ollama](https://ollama.com) — no
 API key required.
 
+> **⚠️ Note on the LLM backend — why local Ollama?**
+> I built this to run on **local Ollama models** (`llama3.2` for the agents,
+> `nomic-embed-text` for embeddings) because I don't have an OpenAI API key, and
+> this keeps the project free and fully reproducible for a reviewer with no keys.
+>
+> Crucially, the code is written against the **OpenAI-compatible interface**, so
+> switching to real OpenAI (or any OpenAI-compatible provider) is a **config-only
+> change — no code edits**. In [`.env`](.env.example):
+> ```env
+> LLM_BACKEND=openai
+> OPENAI_API_KEY=sk-...
+> OPENAI_MODEL=gpt-4o-mini
+> EMBEDDING_BACKEND=openai
+> ```
+> The same `openai` SDK client ([`app/config.py`](app/config.py) →
+> `get_llm_client()`) is simply pointed at OpenAI's endpoint instead of Ollama's.
+> So the architecture, agents, tools, and RAG are provider-agnostic; only the
+> backend URL/model/key differ.
+
 ---
 
 ## Table of contents
