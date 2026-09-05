@@ -8,14 +8,14 @@ openai>=1.40.0            # OpenAI SDK: chat completions + function/tool calling
 
 # --- Agent orchestration --------------------------------------------------
 langgraph>=0.2.0          # Build the orchestrator -> sub-agent graph
-langchain>=0.2.0          # Utilities (text splitters for RAG chunking)
-langchain-text-splitters>=0.2.0  # Sentence-aware chunking of the FAQ
+langchain-text-splitters>=0.2.0  # Sentence-aware chunking fallback for RAG
 
 # --- Structured data between agents (REQUIRED by the assessment) ----------
 pydantic>=2.7.0           # Typed task specs + typed agent outputs (not raw text)
 
-# --- RAG: embeddings + vector store ---------------------------------------
-sentence-transformers>=3.0.0  # Local, free embedding model (all-MiniLM-L6-v2)
+# --- RAG: vector store ----------------------------------------------------
+# Embeddings are produced by Ollama's nomic-embed-text (see app/rag/embed.py),
+# so no local torch/sentence-transformers dependency is needed.
 chromadb>=0.5.0           # Local vector database to store & search FAQ chunks
 
 # --- Data work ------------------------------------------------------------

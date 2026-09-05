@@ -1,0 +1,51 @@
+# ============================================================================
+# MiniSense — full local stack: Ollama (LLM + embeddings) + the FastAPI app.
+#
+#   docker compose up --build
+#   -> API at http://localhost:8000   (Swagger UI at /docs)
+#
+# First run downloads the models (qwen3:8b ~5GB, nomic-embed-text ~270MB) into
+# a named volume, so subsequent runs are fast. CPU-only works but is slower; if
+# you have an NVIDIA GPU + nvidia-container-toolkit, uncomment the `deploy`
+# block under the ollama service for much faster inference.
+# ============================================================================
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: minisense-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama   # persist pulled models across restarts
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    # --- GPU acceleration (optional) ---
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  app:
+    build: .
+    container_name: minisense-app
+    depends_on:
+      ollama:
+        condition: service_healthy   # wait until Ollama is ready
+    environment:
+      LLM_BACKEND: ollama
+      OLLAMA_BASE_URL: http://ollama:11434/v1   # talk to the ollama service
+      OLLAMA_MODEL: qwen3:8b
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      EMBEDDING_BACKEND: ollama
+      SURVEY_RECORDS: "60000"        # dataset size generated on first boot
+    ports:
+      - "8000:8000"
+
+volumes:
+  ollama_models:

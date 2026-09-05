@@ -1,0 +1,14 @@
+# Keep the build context small — these are rebuilt inside the container.
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.gitignore
+chroma_db/
+data/survey_responses.json
+.env
+*.docx
+PROJECT_PLAN.md

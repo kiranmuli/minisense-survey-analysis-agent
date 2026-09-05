@@ -116,6 +116,12 @@ User question
   - hardened SummaryAgent: explicit absence markers + strict no-hallucination rules (fixed invented comparison/FAQ)
   - commit: `feat: FastAPI /ask endpoint`
 
+- [x] **Step 7.5 — Dockerize**
+  - `Dockerfile`, `docker-compose.yml` (Ollama + app), `docker/entrypoint.sh`, `.dockerignore`, `.gitattributes`
+  - trimmed unused heavy deps (sentence-transformers, langchain) to slim the image
+  - `docker compose up --build` → self-contained stack (auto-pulls models, generates data, builds index, serves)
+  - commit: `feat: dockerize with compose (ollama + app)`
+
 - [ ] **Step 8 — Evaluation + README**
   - 3 sample questions with retrieved chunks + final answers
   - Part 3 fine-tuning writeup (300–500 words)
@@ -145,3 +151,4 @@ User question
 | 2026-09-05 | Step 5 | ComparisonAgent (Jul vs Aug: CSAT -9.7pp, Wait Time 19.5%->27.4%) + SummaryAgent. Verified full evidence->narrative with accurate, non-hallucinated numbers. |
 | 2026-09-05 | Step 6 | LangGraph orchestrator: plan->data/rag/comparison->summarize. Verified end-to-end on comparison Q (routed 3 agents, business detected, Wait Time +7.9pp correct). Fixed LLM arithmetic drift by pre-computing deltas. |
 | 2026-09-05 | Step 7 | FastAPI /ask + /health. Verified 200 via TestClient. Caught & fixed a grounding bug: single-month Q had invented a July comparison + FAQ; hardened SummaryAgent with explicit absence markers + temp 0. |
+| 2026-09-05 | Step 7.5 | Dockerized: compose stack (ollama + app), entrypoint auto-pulls models + builds data/index. Trimmed unused torch/langchain deps. Compose validated; image build verified. |
