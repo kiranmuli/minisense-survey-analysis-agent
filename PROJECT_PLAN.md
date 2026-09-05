@@ -94,10 +94,11 @@ User question
   - `app/agents/data_agent.py` — LLM calls `get_survey_metrics` tool; deterministic fallback; returns typed `DataAgentResult`
   - commit: `feat: DataAgent with tool calling`
 
-- [ ] **Step 4 — RAG pipeline** (Part 2)
-  - `app/rag/ingest.py` (chunk + embed + store in Chroma)
-  - `app/rag/retrieve.py` (top-k search)
-  - `app/agents/rag_agent.py`
+- [x] **Step 4 — RAG pipeline** (Part 2)
+  - `app/rag/embed.py` (nomic-embed-text via Ollama)
+  - `app/rag/ingest.py` (structure-aware Q&A chunking + cosine Chroma store; recursive fallback)
+  - `app/rag/retrieve.py` (top-k cosine search with similarity scores)
+  - `app/agents/rag_agent.py` (typed `RAGAgentResult`)
   - commit: `feat: RAG ingest + retrieve + RAGAgent`
 
 - [ ] **Step 5 — ComparisonAgent + SummaryAgent**
@@ -137,3 +138,4 @@ User question
 | 2026-09-05 | Step 1 | Generated 60k survey records + ~500-word FAQ. Verified signal: avg rating 3.85→3.55 Jul→Aug; wait-time complaints 19%→39%. JSON is gitignored (regenerable). |
 | 2026-09-05 | Step 2 | Pydantic contracts (TaskSpec, typed results) + metric tools. Verified on 60k rows: CSAT 64.9%, Aug/GreenLeaf top theme Wait Time 27.4%, string-rating coercion safe. |
 | 2026-09-05 | Step 3 | DataAgent with real LLM tool calling (qwen3:8b -> get_survey_metrics). Verified Aug/GreenLeaf CSAT 60.1, avg 3.55, top theme Wait Time. Deterministic fallback in place. |
+| 2026-09-05 | Step 4 | RAG pipeline: 10 Q&A chunks embedded (nomic, dim=768) into cosine Chroma. Retrieval verified incl. semantic match (phone->app booking). chroma_db/ gitignored. |
