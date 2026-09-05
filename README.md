@@ -10,6 +10,9 @@ business-language answer.
 Everything runs **100% locally and free** via [Ollama](https://ollama.com) — no
 API key required.
 
+> 🔎 **AI tools, libraries, and resources used** are disclosed in
+> [`AI_TOOLS_DISCLOSURE.md`](AI_TOOLS_DISCLOSURE.md).
+
 > **⚠️ Note on the LLM backend — why local Ollama?**
 > I built this to run on **local Ollama models** (`llama3.2` for the agents,
 > `nomic-embed-text` for embeddings) because I don't have an OpenAI API key, and
